@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import express, { Router } from 'express';
 
 import type { ApiError, ApiErrorCode, CreateSubmissionBody, SubmissionView } from '../shared/contract';
+import { getCategory, validateSubmission } from '../shared/categories';
 
 type StoredSubmission = {
   view: SubmissionView;
@@ -12,8 +13,13 @@ export type DebugSubmission = SubmissionView & { storedPhotos: { id: string; sha
 
 const sha256 = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
 
-const fail = (res: express.Response, status: number, code: ApiErrorCode, message: string, missing?: string[]) =>
-  res.status(status).json({ code, message, ...(missing ? { missing } : {}) } satisfies ApiError);
+const fail = (
+  res: express.Response,
+  status: number,
+  code: ApiErrorCode,
+  message: string,
+  extra: Pick<ApiError, 'missing' | 'errors'> = {},
+) => res.status(status).json({ code, message, ...extra } satisfies ApiError);
 
 function isValidBody(body: unknown): body is CreateSubmissionBody {
   const b = body as Partial<CreateSubmissionBody> | null;
@@ -46,6 +52,16 @@ export function createSubmissionRouter() {
         return fail(res, 422, 'idempotency_key_reuse', 'Idempotency-Key was already used with a different body');
       }
       return void res.status(201).json(byId.get(existing.id)!.view);
+    }
+
+    const category = getCategory(req.body.categoryId, req.body.schemaVersion);
+    if (!category) {
+      return fail(res, 422, 'unknown_category', `Unknown category ${req.body.categoryId} v${req.body.schemaVersion}`);
+    }
+    const errors = validateSubmission(category, req.body.fields, req.body.photos.map((p) => p.id));
+    if (errors.length) {
+      const summary = errors.map((e) => e.message).join('; ');
+      return fail(res, 422, 'validation_failed', `Validation failed: ${summary}`, { errors });
     }
 
     const view: SubmissionView = {
@@ -86,7 +102,7 @@ export function createSubmissionRouter() {
     if (!stored) return void res.sendStatus(404);
 
     const missing = stored.view.photos.map((p) => p.id).filter((id) => !stored.photos.has(id));
-    if (missing.length) return fail(res, 409, 'missing_photos', 'Photos still missing', missing);
+    if (missing.length) return fail(res, 409, 'missing_photos', 'Photos still missing', { missing });
 
     stored.view.status = 'finalized';
     res.status(200).json(stored.view);

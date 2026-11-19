@@ -15,13 +15,15 @@ export class InsufficientStorageError extends Error {
 
 // Runs at capture time so storage problems surface while the dealer is still at the machine.
 // Photos are shrunk, then moved out of the OS-purgeable cache into the app's document directory.
-export async function preparePhotos(submissionId: string, sourceUris: string[]): Promise<EnqueueInput['photos']> {
+export async function preparePhotos(
+  submissionId: string,
+  sources: { id: string; uri: string }[],
+): Promise<EnqueueInput['photos']> {
   const dir = new Directory(Paths.document, 'outbox', submissionId);
   dir.create({ intermediates: true, idempotent: true });
 
   const prepared: EnqueueInput['photos'] = [];
-  for (const [index, sourceUri] of sourceUris.entries()) {
-    const id = `p${index}`;
+  for (const { id, uri: sourceUri } of sources) {
     const image = await ImageManipulator.manipulate(sourceUri, { maxWidth: MAX_EDGE_PX, maxHeight: MAX_EDGE_PX }).renderAsync();
     const saved = await image.saveAsync({ compress: JPEG_QUALITY, format: SaveFormat.JPEG });
 

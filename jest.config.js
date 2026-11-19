@@ -1,9 +1,9 @@
 const alias = { '^@/(.*)$': '<rootDir>/src/$1' };
 
-const nodeProject = (displayName, dir) => ({
+const nodeProject = (displayName, ...dirs) => ({
   displayName,
   testEnvironment: 'node',
-  testMatch: [`<rootDir>/${dir}/**/*.test.ts`],
+  testMatch: dirs.map((dir) => `<rootDir>/${dir}/**/*.test.ts`),
   transform: { '^.+\\.[jt]sx?$': 'babel-jest' },
   moduleNameMapper: alias,
 });
@@ -16,7 +16,7 @@ module.exports = {
       testMatch: ['<rootDir>/src/**/*.test.ts?(x)'],
       moduleNameMapper: alias,
     },
-    nodeProject('server', 'server'),
+    nodeProject('server', 'server', 'shared'),
     nodeProject('integration', 'integration'),
   ],
 };

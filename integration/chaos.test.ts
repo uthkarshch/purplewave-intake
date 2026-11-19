@@ -9,7 +9,7 @@ import { memoryStorage } from '../src/outbox/testing';
 import type { Transport } from '../src/outbox/transport';
 import type { EnqueueInput } from '../src/outbox/types';
 import { startServer } from './harness';
-import { nodeFiles, nodePutPhoto, writePhoto } from './support';
+import { excavatorFields, nodeFiles, nodePutPhoto, writePhoto } from './support';
 
 const FAST_LATENCY: [number, number] = [0, 20];
 
@@ -57,10 +57,10 @@ async function makeInputs(count: number): Promise<EnqueueInput[]> {
       id: `sub-${i}`,
       categoryId: 'excavator',
       schemaVersion: 1,
-      fields: { serial: `SN-${i}` },
+      fields: excavatorFields(`SN-${i}`),
       photos: [
-        await writePhoto(dir, `sub-${i}-p0`, `photo zero of ${i}`),
-        await writePhoto(dir, `sub-${i}-p1`, `photo one of ${i}`),
+        await writePhoto(dir, 'front', `front photo of ${i}`, `sub-${i}-front`),
+        await writePhoto(dir, 'hour-meter', `hour meter photo of ${i}`, `sub-${i}-hour-meter`),
       ],
     })),
   );

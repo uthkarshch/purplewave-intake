@@ -27,8 +27,19 @@ export const nodePutPhoto: PutPhoto = async ({ url, photo, signal, onProgress })
   return { status: res.status, body: await res.text(), headers: Object.fromEntries(res.headers) };
 };
 
-export async function writePhoto(dir: string, id: string, content: string) {
-  const uri = join(dir, `${id}.jpg`);
+// A submission that passes excavator v1 validation; photo ids must be its required shot keys.
+export const excavatorFields = (serial: string) => ({
+  make: 'CAT',
+  model: '320',
+  year: 2018,
+  serial,
+  hours: 4200,
+  undercarriage: 'good',
+});
+export const EXCAVATOR_PHOTO_IDS = ['front', 'hour-meter'] as const;
+
+export async function writePhoto(dir: string, id: string, content: string, fileName = id) {
+  const uri = join(dir, `${fileName}.jpg`);
   const bytes = Buffer.from(content);
   await writeFile(uri, bytes);
   return { id, uri, sha256: createHash('sha256').update(bytes).digest('hex'), size: bytes.length };
