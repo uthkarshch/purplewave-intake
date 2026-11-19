@@ -8,7 +8,7 @@ import { createHttpTransport } from './httpTransport';
 import { OutboxProcessor } from './processor';
 import { OutboxStore } from './store';
 import { attachTriggers } from './triggers';
-import type { OutboxRecord } from './types';
+import type { EnqueueInput, OutboxRecord } from './types';
 
 const store = new OutboxStore(AsyncStorage);
 const processor = new OutboxProcessor({
@@ -36,6 +36,12 @@ export function startOutbox(): Promise<void> {
 }
 
 export const outbox = processor;
+
+// Waits for persisted state to load so a fast first submit cannot race the boot-time reload.
+export async function enqueueSubmission(input: EnqueueInput): Promise<OutboxRecord> {
+  await startOutbox();
+  return processor.enqueue(input);
+}
 
 export function useOutboxRecords(): OutboxRecord[] {
   return useSyncExternalStore(store.subscribe, store.getSnapshot);

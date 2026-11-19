@@ -1,30 +1,23 @@
-import { useState } from 'react';
-import {
-  Alert,
-  Button,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import { fetch as expoFetch } from 'expo/fetch';
-import { File } from 'expo-file-system';
+import { useRef, useState } from 'react';
+import { Alert, Button, Image, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { randomUUID } from 'expo-crypto';
 import * as ImagePicker from 'expo-image-picker';
 
-import { submitNaive, type ExcavatorFields } from '@/api/naiveSubmit';
-import { getApiBaseUrl } from '@/config';
+import { PendingBanner } from '@/components/pending-banner';
+import { preparePhotos } from '@/outbox/preparePhotos';
+import { enqueueSubmission } from '@/outbox/runtime';
 
-const EMPTY: ExcavatorFields = { make: '', model: '', year: '', hours: '', serial: '', condition: '' };
+const FIELD_KEYS = ['make', 'model', 'year', 'hours', 'serial', 'condition'] as const;
+type Fields = Record<(typeof FIELD_KEYS)[number], string>;
+const EMPTY: Fields = { make: '', model: '', year: '', hours: '', serial: '', condition: '' };
 
 export default function NewAppraisal() {
-  const [fields, setFields] = useState<ExcavatorFields>(EMPTY);
+  const [fields, setFields] = useState<Fields>(EMPTY);
   const [photoUris, setPhotoUris] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
-
-  const set = (key: keyof ExcavatorFields) => (value: string) =>
-    setFields((prev) => ({ ...prev, [key]: value }));
+  // Minted when the form opens so a double-tap or a retry can never create a second submission.
+  const [submissionId, setSubmissionId] = useState(() => randomUUID());
+  const submitting = useRef(false);
 
   async function addPhotos(source: 'camera' | 'library') {
     const result =
@@ -35,35 +28,35 @@ export default function NewAppraisal() {
   }
 
   async function submit() {
+    if (submitting.current) return;
+    submitting.current = true;
     setBusy(true);
     try {
-      const photos = photoUris.map((uri) => new File(uri));
-      const { id } = await submitNaive(
-        getApiBaseUrl(),
-        fields,
-        photos as unknown as Blob[],
-        expoFetch as unknown as typeof fetch,
-      );
-      Alert.alert('Submitted', `Submission ${id} received.`);
+      const photos = await preparePhotos(submissionId, photoUris);
+      await enqueueSubmission({ id: submissionId, categoryId: 'excavator', schemaVersion: 1, fields, photos });
       setFields(EMPTY);
       setPhotoUris([]);
+      setSubmissionId(randomUUID());
+      Alert.alert('Saved', 'Your appraisal is queued and will upload automatically, even if the connection drops.');
     } catch (e) {
-      Alert.alert('Submit failed', String(e));
+      Alert.alert('Could not queue the appraisal', e instanceof Error ? e.message : String(e));
     } finally {
+      submitting.current = false;
       setBusy(false);
     }
   }
 
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <PendingBanner />
       <Text style={styles.heading}>Excavator</Text>
-      {(Object.keys(EMPTY) as (keyof ExcavatorFields)[]).map((key) => (
+      {FIELD_KEYS.map((key) => (
         <TextInput
           key={key}
           style={styles.input}
           placeholder={key}
           value={fields[key]}
-          onChangeText={set(key)}
+          onChangeText={(value) => setFields((prev) => ({ ...prev, [key]: value }))}
           multiline={key === 'condition'}
         />
       ))}
@@ -78,7 +71,11 @@ export default function NewAppraisal() {
         ))}
       </View>
 
-      <Button title={busy ? 'Submitting…' : 'Submit for appraisal'} onPress={submit} disabled={busy} />
+      <Button
+        title={busy ? 'Saving…' : 'Submit for appraisal'}
+        onPress={submit}
+        disabled={busy || photoUris.length === 0}
+      />
     </ScrollView>
   );
 }

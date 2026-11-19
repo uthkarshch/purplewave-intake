@@ -32,9 +32,6 @@
           "photosPermission": "Allow Purple Wave Intake to attach equipment photos."
         }
       ]
-    ],
-    "experiments": {
-      "typedRoutes": true
-    }
+    ]
   }
 }

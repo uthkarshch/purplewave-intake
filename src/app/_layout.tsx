@@ -11,6 +11,7 @@ export default function RootLayout() {
   return (
     <Stack>
       <Stack.Screen name="index" options={{ title: 'New appraisal' }} />
+      <Stack.Screen name="submissions" options={{ title: 'Submissions' }} />
     </Stack>
   );
 }
