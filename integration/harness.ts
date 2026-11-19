@@ -3,6 +3,7 @@ import type { AddressInfo } from 'node:net';
 
 import { createApp } from '../server/app';
 import type { NaiveSubmission } from '../server/app';
+import type { DebugSubmission } from '../server/submissions';
 
 export async function startServer(seed = 1) {
   const server = createApp({ seed }).listen(0);
@@ -21,6 +22,9 @@ export async function startServer(seed = 1) {
     },
     async submissions(): Promise<NaiveSubmission[]> {
       return (await fetch(`${baseUrl}/__debug/submissions`)).json();
+    },
+    async v1Submissions(): Promise<DebugSubmission[]> {
+      return (await fetch(`${baseUrl}/__debug/v1/submissions`)).json();
     },
     close: () =>
       new Promise<void>((resolve) => {

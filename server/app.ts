@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 
 import { createChaos } from './chaos';
+import { createSubmissionRouter } from './submissions';
 
 export type NaiveSubmission = {
   id: string;
@@ -13,6 +14,7 @@ export function createApp(options: { seed?: number } = {}) {
   const app = express();
   const upload = multer({ storage: multer.memoryStorage() });
   const chaos = createChaos(options.seed);
+  const v1 = createSubmissionRouter();
   const submissions: NaiveSubmission[] = [];
 
   // Control endpoints sit before the chaos middleware so faults never hit them.
@@ -29,7 +31,12 @@ export function createApp(options: { seed?: number } = {}) {
     res.json(submissions);
   });
 
+  app.get('/__debug/v1/submissions', (_req, res) => {
+    res.json(v1.debugList());
+  });
+
   app.use(chaos.middleware);
+  app.use('/submissions', v1.router);
 
   // v0: single multipart request carrying metadata and every photo, no idempotency.
   app.post('/v0/submissions', upload.array('photos'), (req, res) => {
