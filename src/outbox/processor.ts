@@ -33,10 +33,11 @@ export class OutboxProcessor {
     this.random = deps.random ?? Math.random;
   }
 
+  // Resolves once persisted state is loaded; the first drain runs in the background.
   async start(): Promise<void> {
     await this.store.load();
     await this.store.resetInFlight();
-    await this.requestDrain();
+    void this.requestDrain();
   }
 
   async enqueue(input: EnqueueInput): Promise<OutboxRecord> {

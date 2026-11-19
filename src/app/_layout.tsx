@@ -1,6 +1,13 @@
+import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 
+import { startOutbox } from '@/outbox/runtime';
+
 export default function RootLayout() {
+  useEffect(() => {
+    void startOutbox();
+  }, []);
+
   return (
     <Stack>
       <Stack.Screen name="index" options={{ title: 'New appraisal' }} />
