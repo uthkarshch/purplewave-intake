@@ -11,6 +11,7 @@ type Deps = {
   files: PhotoFiles;
   now?: () => number;
   random?: () => number;
+  backoff?: (attempts: number, retryAfterMs?: number) => number;
 };
 
 export class OutboxProcessor {
@@ -18,7 +19,7 @@ export class OutboxProcessor {
   private transport: Transport;
   private files: PhotoFiles;
   private now: () => number;
-  private random: () => number;
+  private backoff: (attempts: number, retryAfterMs?: number) => number;
 
   private active = false;
   private again = false;
@@ -30,7 +31,8 @@ export class OutboxProcessor {
     this.transport = deps.transport;
     this.files = deps.files;
     this.now = deps.now ?? Date.now;
-    this.random = deps.random ?? Math.random;
+    const random = deps.random ?? Math.random;
+    this.backoff = deps.backoff ?? ((attempts, retryAfterMs) => computeBackoff(attempts, random, retryAfterMs));
   }
 
   // Resolves once persisted state is loaded; the first drain runs in the background.
@@ -209,7 +211,7 @@ export class OutboxProcessor {
     await this.store.update(id, {
       phase: 'queued',
       attempts,
-      nextAttemptAt: this.now() + computeBackoff(attempts, this.random, err.details.retryAfterMs),
+      nextAttemptAt: this.now() + this.backoff(attempts, err.details.retryAfterMs),
       lastError: err.message,
     });
   }

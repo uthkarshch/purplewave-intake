@@ -46,8 +46,8 @@ describe('baseline naive client', () => {
     }
   }, 60_000);
 
-  // Documents the reported bug. Flips to a plain `test` assertion once the outbox client lands;
-  // kept as `failing` so this stays a permanent control proving the harness detects the loss.
+  // Control: the same scenario passes for the outbox client in chaos.test.ts, so this stays
+  // `failing` to prove the harness still detects the loss that was reported.
   test.failing('loses or duplicates submissions on flaky wifi', async () => {
     const server = await startServer(7);
     try {
