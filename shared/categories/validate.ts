@@ -52,6 +52,16 @@ export function validateSubmission(
 
 // Form inputs are strings; turn them into the typed values the server validates.
 // A number that does not parse stays a string so validation reports it instead of hiding it.
+// Plain decimals only: Number() would also accept '1e3', '0x10' and ' '.
+const NUMBER_PATTERN = /^-?(\d+\.?\d*|\.\d+)$/;
+
+// Keeps only what can be part of a plain decimal number while the user types.
+export function sanitizeNumberInput(text: string, allowNegative: boolean): string {
+  const negative = allowNegative && text.trimStart().startsWith('-') ? '-' : '';
+  const [whole = '', ...rest] = text.replace(/[^\d.]/g, '').split('.');
+  return negative + whole + (rest.length ? `.${rest.join('')}` : '');
+}
+
 export function coerceValues(category: CategoryDef, raw: Record<string, string | boolean | undefined>) {
   const values: Record<string, unknown> = {};
   for (const def of category.fields) {
@@ -59,7 +69,7 @@ export function coerceValues(category: CategoryDef, raw: Record<string, string |
     if (typeof value === 'boolean') values[def.key] = value;
     else if (value !== undefined && value.trim() !== '') {
       const trimmed = value.trim();
-      values[def.key] = def.type === 'number' && Number.isFinite(Number(trimmed)) ? Number(trimmed) : trimmed;
+      values[def.key] = def.type === 'number' && NUMBER_PATTERN.test(trimmed) ? Number(trimmed) : trimmed;
     }
   }
   return values;

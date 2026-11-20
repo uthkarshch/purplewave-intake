@@ -18,4 +18,4 @@ export function latestCategories(): CategoryDef[] {
 }
 
 export type { CategoryDef, FieldDef, PhotoShot } from './types';
-export { validateSubmission, coerceValues, type ValidationError } from './validate';
+export { validateSubmission, coerceValues, sanitizeNumberInput, type ValidationError } from './validate';

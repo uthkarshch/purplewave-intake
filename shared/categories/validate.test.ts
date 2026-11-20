@@ -1,5 +1,5 @@
 import { CATEGORIES, getCategory, latestCategories } from './index';
-import { coerceValues, validateSubmission } from './validate';
+import { coerceValues, sanitizeNumberInput, validateSubmission } from './validate';
 
 const excavator = getCategory('excavator', 1)!;
 const tractor = getCategory('tractor', 1)!;
@@ -92,5 +92,25 @@ describe('coerceValues', () => {
     const values = coerceValues(excavator, { ...validExcavator, year: 'twenty', hours: '1', make: 'x', model: 'y', serial: 'z', undercarriage: 'good' } as never);
     expect(values.year).toBe('twenty');
     expect(validateSubmission(excavator, values, ['front', 'hour-meter']).map((e) => e.field)).toEqual(['year']);
+  });
+
+  test('only plain decimals count as numbers, not exponent, hex or infinity forms', () => {
+    for (const bad of ['1e3', '0x10', 'Infinity', '1.2.3', '-', '.']) {
+      expect(coerceValues(excavator, { hours: bad }).hours).toBe(bad);
+    }
+    expect(coerceValues(excavator, { hours: '.5' }).hours).toBe(0.5);
+    expect(coerceValues(excavator, { hours: '12.' }).hours).toBe(12);
+  });
+});
+
+describe('sanitizeNumberInput', () => {
+  test('keeps digits and the first decimal point only', () => {
+    expect(sanitizeNumberInput('ab1,2e3.5.6', false)).toBe('123.56');
+    expect(sanitizeNumberInput('-5', false)).toBe('5');
+  });
+
+  test('keeps a leading minus only when negatives are allowed', () => {
+    expect(sanitizeNumberInput('-5-', true)).toBe('-5');
+    expect(sanitizeNumberInput('5-', true)).toBe('5');
   });
 });

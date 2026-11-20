@@ -10,7 +10,7 @@ export const excavatorV1: CategoryDef = {
     { key: 'year', label: 'Year', type: 'number', required: true, min: 1950, max: 2100 },
     { key: 'serial', label: 'Serial number', type: 'text', required: true },
     { key: 'hours', label: 'Hours', type: 'number', required: true, min: 0, unit: 'h' },
-    { key: 'undercarriage', label: 'Undercarriage', type: 'select', required: true, options: ['good', 'fair', 'poor'] },
+    { key: 'undercarriage', label: 'Undercarriage', type: 'select', required: true, options: ['good', 'fair', 'poor'], defaultValue: 'fair' },
     { key: 'condition', label: 'Condition notes', type: 'text', multiline: true },
   ],
   photoShots: [
