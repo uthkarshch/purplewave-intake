@@ -1,4 +1,4 @@
-const alias = { '^@/(.*)$': '<rootDir>/src/$1' };
+const alias = { '^@/(.*)$': '<rootDir>/src/$1', '^@shared/(.*)$': '<rootDir>/shared/$1' };
 
 const nodeProject = (displayName, ...dirs) => ({
   displayName,
@@ -14,6 +14,7 @@ module.exports = {
       displayName: 'app',
       preset: 'jest-expo',
       testMatch: ['<rootDir>/src/**/*.test.ts?(x)'],
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
       moduleNameMapper: alias,
     },
     nodeProject('server', 'server', 'shared'),

@@ -31,7 +31,8 @@
           "cameraPermission": "Allow Purple Wave Intake to photograph equipment.",
           "photosPermission": "Allow Purple Wave Intake to attach equipment photos."
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }
