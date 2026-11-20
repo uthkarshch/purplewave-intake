@@ -22,3 +22,6 @@ Only one fits: it removes the buttons without changing how photos are picked or 
 ## Calls made by the builder
 - Chooser is a native `Alert` with buttons (works on iOS and Android, no new dependency).
 - Extras get a single "+ Extra" box rather than two buttons.
+
+## Deviations as built
+- The chooser is the `ActionSheet` from `src/ui`, not a native `Alert`, so it matches the rest of the app. The component lives at `src/features/appraisal/photos/photo-slots.tsx` after the move to the feature folders; its props are unchanged.

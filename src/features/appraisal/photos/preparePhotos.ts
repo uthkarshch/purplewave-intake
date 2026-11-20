@@ -1,7 +1,7 @@
 import { Directory, File, Paths } from 'expo-file-system';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 
-import type { EnqueueInput } from './types';
+import type { EnqueueInput } from '@/features/outbox';
 
 const MAX_EDGE_PX = 1600;
 const JPEG_QUALITY = 0.7;

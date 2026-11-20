@@ -120,3 +120,14 @@ Each step ends with `tsc --noEmit` and the full Jest run passing before the next
 ## Open questions
 
 - Whether to delete `src/api/naiveSubmit.ts` and `/v0/submissions` later. `DECISIONS.md` says they should not ship, but the repro test needs them, so it is out of scope here.
+
+## Deviations from the design as built
+
+- `PendingBanner` lives in `features/outbox`, not `features/submissions`. The appraisal screen shows it, and rule 3 forbids appraisal depending on submissions.
+- `preparePhotos` moved to `features/appraisal/photos/`: it runs at capture time and only produces the outbox's `EnqueueInput` photos.
+- `OutboxProvider` takes a required `api` prop instead of defaulting to the real outbox, so importing it never loads native modules. The real `outboxApi` is built in `runtime.ts` and passed by `src/app/_layout.tsx`, the one composition root. `runtime.ts` no longer exports `outbox`, `enqueueSubmission` or `useOutboxRecords`.
+- `useAppraisalForm` takes its `deps` as a required argument. `deps.ts` holds the native defaults (`nativeDeps`, without `enqueue`), and the screen adds `enqueue` from `useOutbox()`.
+- `submit()` returns `{ status: 'saved' | 'skipped' } | { status: 'failed'; error }` instead of `{ ok }`, so a double tap or an invalid form is distinguishable from a failure.
+- Added a `ui/Input` primitive, shared by the text and number renderers.
+- `shared/` is imported through a `@shared/*` alias, which tsconfig, Jest (all three projects) and Metro all resolve. The server keeps its relative imports.
+- Test helper `fakeOutboxApi` is exported from `features/outbox` so any feature test can inject a fake.

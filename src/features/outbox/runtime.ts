@@ -1,10 +1,10 @@
-import { useSyncExternalStore } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 
 import { getApiBaseUrl } from '@/config';
 import { expoFiles, expoPutPhoto, foregroundEvents } from './expo';
 import { createHttpTransport } from './httpTransport';
+import type { OutboxApi } from './OutboxProvider';
 import { OutboxProcessor } from './processor';
 import { OutboxStore } from './store';
 import { attachTriggers } from './triggers';
@@ -35,14 +35,16 @@ export function startOutbox(): Promise<void> {
   return started;
 }
 
-export const outbox = processor;
-
 // Waits for persisted state to load so a fast first submit cannot race the boot-time reload.
-export async function enqueueSubmission(input: EnqueueInput): Promise<OutboxRecord> {
+async function enqueueSubmission(input: EnqueueInput): Promise<OutboxRecord> {
   await startOutbox();
   return processor.enqueue(input);
 }
 
-export function useOutboxRecords(): OutboxRecord[] {
-  return useSyncExternalStore(store.subscribe, store.getSnapshot);
-}
+// The real outbox as the UI sees it; hand it to <OutboxProvider> once at the root.
+export const outboxApi: OutboxApi = {
+  subscribe: store.subscribe,
+  getSnapshot: store.getSnapshot,
+  enqueue: enqueueSubmission,
+  retry: (id) => processor.retry(id),
+};
