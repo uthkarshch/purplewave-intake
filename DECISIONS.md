@@ -13,6 +13,7 @@ This means the server contract is mine, not Purple Wave's. The client/server des
 - One dealer, one device, one outbox. No cross-device sync.
 - A submission is not editable once queued.
 - Required photos are per-category "shots"; extra photos are always allowed.
+- Submit is disabled until every required field and required photo is present, so the form never queues something the server would reject. The server still validates, because the app is not the only possible client.
 - Photos are resized to 1600px and JPEG 0.7 before they are stored. Dealers do not need originals for an appraisal.
 
 ## What I prioritized and why
@@ -21,7 +22,8 @@ This means the server contract is mine, not Purple Wave's. The client/server des
 2. **Server contract and outbox core**, because that is the fix. Everything else is secondary to "a submission is never lost and never duplicated".
 3. **Chaos integration tests before the UI.** I did commit 7 (proof) before commit 6 (UI) on purpose: the UI is replaceable, the guarantee is the deliverable. The git order is not the numbering in my original plan.
 4. **UI**, kept thin: submit returns as soon as the record is durable, a banner, a status list, manual retry.
-5. **Category registry**, last, because the second category is next month and data loss is happening now.
+5. **Category registry**, because the second category is next month and data loss is happening now.
+6. **UI pass, last, once the guarantee was proven.** The thin screens were reorganised into `src/features/` (outbox, appraisal, submissions) on top of a reusable `src/ui/` kit that knows nothing about appraisals, with the real outbox wired in at one place (`src/app/_layout.tsx`) so screens can be tested against a fake. Photo capture became tap-to-add boxes, number inputs only accept plain decimals, and selects have defaults. None of this touches the outbox or server behaviour.
 
 ## Why the fix holds on a bad connection
 
@@ -68,7 +70,7 @@ Evidence, in `integration/chaos.test.ts` (real outbox, real HTTP transport, real
 
 - **Not verified on a device or in Expo Go.** I had no simulator or phone. The JS bundles compile for iOS and Android, and the logic is covered by tests, but the native seams are only exercised on real hardware: `File.createUploadTask` PUT upload, `ImageManipulator`, `preparePhotos` (move to document dir, SHA-256, disk check), AsyncStorage and NetInfo wiring, and the camera/library pickers. `preparePhotos` has no automated test. This is the first thing I would do next: run the chaos presets from a phone.
 - **Drafts across restarts.** Planned, cut. A half-filled form is lost on app kill; only submitted work is protected. Persisting fields is easy; persisting photos means preparing them at pick time.
-- **Retaking a missing photo.** A missing local file parks the submission as `needs-attention`. There is no retake flow.
+- **Retaking a missing photo.** A missing local file parks the submission as `needs-attention`. There is no retake flow, and a photo cannot be removed once added.
 - Auth and token refresh.
 - Real persistence on the server (it is in memory), and a unique constraint for idempotency keys.
 - Storage cleanup: submitted records stay as history; only photo files are removed.
@@ -88,7 +90,8 @@ Evidence, in `integration/chaos.test.ts` (real outbox, real HTTP transport, real
 
 I used an AI coding assistant for the whole exercise and treated its output as a draft to verify.
 
-- I had it brainstorm the design first (approaches, a table of races and edge cases) and approved a written spec before any code. The spec is in `docs/superpowers/specs/`.
+- I had it brainstorm the design first (approaches, a table of races and edge cases) and approved a written spec before any code. The specs are in `docs/superpowers/specs/`: one for the outbox, and one each for the modular UI structure and the tap-to-add photo boxes.
+- Exports of the UI-side sessions are in `transcripts/`. They do not cover the sessions that built the outbox, server and chaos tests; `transcripts/README.md` says exactly what is and is not included.
 - I asked it to check current Expo SDK 58 docs for `expo-file-system`, `expo-image-manipulator` and the upload task API instead of trusting its memory, since the API has changed.
 - Things I caught or verified rather than accepted:
   - The first clock-skew clamp was wrong: it clamped relative to "now", so a far-future retry time never became due. Its own test caught it; the fix is "an implausibly distant time is treated as due now".
