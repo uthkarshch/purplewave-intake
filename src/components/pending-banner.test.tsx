@@ -1,11 +1,11 @@
 import { render, screen } from '@testing-library/react-native';
 
-import type { OutboxRecord } from '@/outbox/types';
+import type { OutboxRecord } from '@/features/outbox/types';
 import { PendingBanner } from './pending-banner';
 
 const mockRecords: { current: OutboxRecord[] } = { current: [] };
 
-jest.mock('@/outbox/runtime', () => ({ useOutboxRecords: () => mockRecords.current }));
+jest.mock('@/features/outbox/runtime', () => ({ useOutboxRecords: () => mockRecords.current }));
 jest.mock('expo-router', () => ({ Link: ({ children }: { children: unknown }) => children }));
 
 const withPhase = (phase: OutboxRecord['phase']) => ({ id: phase, phase }) as OutboxRecord;

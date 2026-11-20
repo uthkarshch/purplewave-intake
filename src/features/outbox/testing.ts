@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-import type { SubmissionView } from '../../shared/contract';
+import type { SubmissionView } from '@shared/contract';
 import type { KeyValueStorage } from './store';
 import { TransportError, type CreateBody, type PhotoFiles, type Transport } from './transport';
 import type { EnqueueInput, OutboxPhoto } from './types';

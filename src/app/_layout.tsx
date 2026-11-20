@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 
-import { startOutbox } from '@/outbox/runtime';
+import { startOutbox } from '@/features/outbox/runtime';
 
 export default function RootLayout() {
   useEffect(() => {

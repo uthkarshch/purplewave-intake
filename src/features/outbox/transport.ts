@@ -1,4 +1,4 @@
-import type { SubmissionView } from '../../shared/contract';
+import type { SubmissionView } from '@shared/contract';
 import type { OutboxPhoto } from './types';
 
 export type TransportErrorKind = 'transient' | 'permanent';

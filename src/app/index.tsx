@@ -7,8 +7,8 @@ import { coerceValues, latestCategories, validateSubmission } from '../../shared
 import { CategoryForm, initialValues, type FormValues } from '@/components/category-form';
 import { PendingBanner } from '@/components/pending-banner';
 import { PhotoSlots, type PhotoSource } from '@/components/photo-slots';
-import { preparePhotos } from '@/outbox/preparePhotos';
-import { enqueueSubmission } from '@/outbox/runtime';
+import { preparePhotos } from '@/features/outbox/preparePhotos';
+import { enqueueSubmission } from '@/features/outbox/runtime';
 
 const CATEGORIES = latestCategories();
 

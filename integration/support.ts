@@ -2,8 +2,8 @@ import { createHash } from 'node:crypto';
 import { access, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import type { PutPhoto } from '../src/outbox/httpTransport';
-import type { PhotoFiles } from '../src/outbox/transport';
+import type { PutPhoto } from '../src/features/outbox/httpTransport';
+import type { PhotoFiles } from '../src/features/outbox/transport';
 
 // Node stand-ins for the Expo file APIs: a photo "uri" is just a path on disk.
 export const nodeFiles: PhotoFiles = {

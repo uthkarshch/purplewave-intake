@@ -1,12 +1,12 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
-import type { OutboxRecord } from '@/outbox/types';
+import type { OutboxRecord } from '@/features/outbox/types';
 import Submissions from '@/app/submissions';
 
 const mockRecords: { current: OutboxRecord[] } = { current: [] };
 const mockRetry = jest.fn();
 
-jest.mock('@/outbox/runtime', () => ({
+jest.mock('@/features/outbox/runtime', () => ({
   outbox: { retry: (id: string) => mockRetry(id) },
   useOutboxRecords: () => mockRecords.current,
 }));

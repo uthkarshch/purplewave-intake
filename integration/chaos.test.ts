@@ -2,12 +2,12 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { createHttpTransport } from '../src/outbox/httpTransport';
-import { OutboxProcessor } from '../src/outbox/processor';
-import { OutboxStore } from '../src/outbox/store';
-import { memoryStorage } from '../src/outbox/testing';
-import type { Transport } from '../src/outbox/transport';
-import type { EnqueueInput } from '../src/outbox/types';
+import { createHttpTransport } from '../src/features/outbox/httpTransport';
+import { OutboxProcessor } from '../src/features/outbox/processor';
+import { OutboxStore } from '../src/features/outbox/store';
+import { memoryStorage } from '../src/features/outbox/testing';
+import type { Transport } from '../src/features/outbox/transport';
+import type { EnqueueInput } from '../src/features/outbox/types';
 import { startServer } from './harness';
 import { excavatorFields, nodeFiles, nodePutPhoto, writePhoto } from './support';
 

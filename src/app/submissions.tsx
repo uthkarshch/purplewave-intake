@@ -1,7 +1,7 @@
 import { Button, FlatList, StyleSheet, Text, View } from 'react-native';
 
-import { outbox, useOutboxRecords } from '@/outbox/runtime';
-import type { OutboxRecord } from '@/outbox/types';
+import { outbox, useOutboxRecords } from '@/features/outbox/runtime';
+import type { OutboxRecord } from '@/features/outbox/types';
 
 function statusLabel(record: OutboxRecord): string {
   switch (record.phase) {

@@ -1,7 +1,7 @@
 import { Link } from 'expo-router';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
-import { useOutboxRecords } from '@/outbox/runtime';
+import { useOutboxRecords } from '@/features/outbox/runtime';
 
 export function PendingBanner() {
   const records = useOutboxRecords();

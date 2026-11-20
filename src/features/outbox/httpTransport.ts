@@ -1,4 +1,4 @@
-import type { SubmissionView } from '../../shared/contract';
+import type { SubmissionView } from '@shared/contract';
 import { TransportError, type CreateBody, type Transport } from './transport';
 import type { OutboxPhoto } from './types';
 
